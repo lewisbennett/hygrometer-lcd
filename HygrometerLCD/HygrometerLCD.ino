@@ -50,7 +50,6 @@ void setup() {
 void loop() {
 
 	uint8_t relativeHumidity = dht.readHumidity();
-	float temperature = dht.readTemperature();
 
 	uint8_t column = 0;
 
@@ -78,53 +77,8 @@ void loop() {
 		}
 	}
 
-	column = 0;
-
-	if (!isnan(temperature)) {
-
-		int temperatureInt = (uint16_t)temperature;
-
-		column = 13;
-
-		lcd.setCursor(column, 0);
-		lcd.print(temperatureInt);
-
-		if (temperatureInt >= 0)
-			column = temperatureInt < 10 ? 14 : 15;
-
-		else
-			column = temperatureInt > -10 ? 15 : 16;
-
-		lcd.setCursor(column, 0);
-
-		float temperatureDecimal = temperature - temperatureInt;
-
-		if (temperatureDecimal != 0) {
-
-			lcd.print(".");
-
-			lcd.setCursor(column += 1, 0);
-			lcd.print((uint8_t)(temperatureDecimal * 10));
-
-			lcd.setCursor(column += 1, 0);
-		}
-
-		lcd.print((char)223);		// Prints the degree symbol.
-		lcd.setCursor(column += 1, 0);
-		lcd.print("C");
-
-		column++;
-
-		// Clear the remaining columns.
-		while (column < LCD_COLUMNS) {
-
-			lcd.setCursor(column, 0);
-			lcd.print(" ");
-
-			column++;
-		}
-	}
-
+	float temperature = displayTemperature(13, 0) / 10.0;
+	
 	// Absolute humidity can't be calculated without both values.
 	if (isnan(relativeHumidity) || isnan(temperature))
 		return;
@@ -136,6 +90,84 @@ void loop() {
 
 	lcd.setCursor(column, 2);
 	lcd.print(absoluteHumidity);
+}
+
+#pragma endregion
+
+#pragma region Value Displaying Functions
+
+/*
+ * @brief Displays the latest temperature reading on the LCD.
+ * @param column The starting column for printing values.
+ * @param row The row to print values on.
+ * @returns Returns the temperature reading, multiplied by 10 (to avoid floating point math).
+ */
+int displayTemperature(uint8_t column, uint8_t row) {
+
+	// Get the temperature, but multiply by 10 to avoid floating point math.
+	int temperature_X10 = dht.readTemperature() * 10;
+
+	if (isnan(temperature_X10))
+		return NAN;
+
+	// Get the original temperature with no decimals. We'll use this to separate the decimal value from the whole value.
+	int temperature_Int = temperature_X10 / 10;
+
+	lcd.setCursor(column, row);
+	lcd.print(temperature_Int);
+
+	// The next column will differ depending on the character count of the temperature reading. For example:
+	// 0 - 9: one character;
+	// -1 - -9, 10 - 99: two characters;
+	// -10 - -99: three characters.
+	// The DHT11 and DHT22 can't read high or low enough for triple digits, so we only need to be concerned with the above.
+	if (temperature_Int <= -10)
+		column += 3;
+
+	else if (temperature_Int >= 10 || temperature_Int < 0)
+		column += 2;
+
+	else
+		column += 1;
+
+	lcd.setCursor(column, row);
+
+	// Isolate the decimal value. The value must also be absolute, as we don't care whether it's negative at this point.
+	uint8_t temperature_Decimal = abs(temperature_X10 - (temperature_Int * 10));
+
+	if (temperature_Decimal != 0) {
+
+		lcd.print(".");
+
+		column++;
+
+		lcd.setCursor(column, row);
+		lcd.print(temperature_Decimal);
+
+		column++;
+
+		lcd.setCursor(column, row);
+	}
+
+	lcd.print((char)223);		// Prints the degree symbol.
+
+	column++;
+
+	lcd.setCursor(column, row);
+	lcd.print("C");
+
+	column++;
+
+	// Clear the remaining columns.
+	while (column < LCD_COLUMNS) {
+
+		lcd.setCursor(column, row);
+		lcd.print(" ");
+
+		column++;
+	}
+
+	return temperature_X10;
 }
 
 #pragma endregion
