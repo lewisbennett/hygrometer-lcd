@@ -49,34 +49,7 @@ void setup() {
  */
 void loop() {
 
-	uint8_t relativeHumidity = dht.readHumidity();
-
-	uint8_t column = 0;
-
-	if (!isnan(relativeHumidity)) {
-
-		column = 15;
-
-		lcd.setCursor(column, 1);
-		lcd.print(relativeHumidity);
-
-		column = relativeHumidity < 10 ? 16 : 17;
-
-		lcd.setCursor(column, 1);
-		lcd.print("%");
-
-		column++;
-
-		// Clear the remaining columns.
-		while (column < LCD_COLUMNS) {
-
-			lcd.setCursor(column, 1);
-			lcd.print(" ");
-
-			column++;
-		}
-	}
-
+	uint8_t relativeHumidity = displayRelativeHumidity(15, 1);
 	float temperature = displayTemperature(13, 0) / 10.0;
 	
 	// Absolute humidity can't be calculated without both values.
@@ -86,15 +59,57 @@ void loop() {
 	// Formula from: https://carnotcycle.wordpress.com/2012/08/04/how-to-convert-relative-humidity-to-absolute-humidity/
 	float absoluteHumidity = (6.112 * pow(2.71828, (17.67 * temperature) / (temperature + 243.5)) * (relativeHumidity / 100.0) * 2.1674) / (273.15 + temperature);
 
-	column = 15;
-
-	lcd.setCursor(column, 2);
+	lcd.setCursor(15, 2);
 	lcd.print(absoluteHumidity);
 }
 
 #pragma endregion
 
 #pragma region Value Displaying Functions
+
+/*
+ * @brief Displays the latest relative humidity reading on the LCD.
+ * @param column The starting column for printing values.
+ * @param row The row to print values on.
+ * @returns Returns the relative humidity reading.
+ */
+uint8_t displayRelativeHumidity(uint8_t column, uint8_t row) {
+
+	uint8_t relativeHumidity = dht.readHumidity();
+
+	if (isnan(relativeHumidity))
+		return NAN;
+
+	lcd.setCursor(column, row);
+	lcd.print(relativeHumidity);
+
+	// Increment the column by the character count of the value.
+	// Relative humidity is shown as a percentage, so we only need to be concered with values 0 - 100.
+	if (relativeHumidity == 100)
+		column += 3;
+
+	else if (relativeHumidity > 10)
+		column += 2;
+
+	else
+		column++;
+
+	lcd.setCursor(column, row);
+	lcd.print("%");
+
+	column++;
+
+	// Clear the remaining columns.
+	while (column < LCD_COLUMNS) {
+
+		lcd.setCursor(column, row);
+		lcd.print(" ");
+
+		column++;
+	}
+
+	return relativeHumidity;
+}
 
 /*
  * @brief Displays the latest temperature reading on the LCD.
@@ -128,7 +143,7 @@ int displayTemperature(uint8_t column, uint8_t row) {
 		column += 2;
 
 	else
-		column += 1;
+		column++;
 
 	lcd.setCursor(column, row);
 
