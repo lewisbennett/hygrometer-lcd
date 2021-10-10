@@ -1,4 +1,9 @@
 /*
+ * @brief Defines the row on the LCD to display temperature. Requires DISPLAY_ABSOLUTE_HUMIDITY.
+ */
+#define ABSOLUTE_HUMIDITY_LCD_ROW 2
+
+/*
  * @brief Defines the pin that the DHT sensor is connected to.
  */
 #define DHT_PIN 2
@@ -25,6 +30,11 @@
 #define DISPLAY_TEMPERATURE
 
 /*
+ * @brief Defines how long to wait between making hygro readings, in milliseconds.
+ */
+#define HYGRO_READING_INTERVAL_MILLIS 2000
+
+/*
  * @brief Defines the I2C address for the LCD screen.
  */
 #define LCD_I2C_ADDRESS 0x27
@@ -40,9 +50,9 @@
 #define LCD_ROWS 4
 
 /*
- * @brief Defines the row on the LCD to display temperature. Requires DISPLAY_ABSOLUTE_HUMIDITY.
+ * @brief Defines the pin that the PIR sensor is connected to. Requires USE_PIR.
  */
-#define ABSOLUTE_HUMIDITY_LCD_ROW 2
+#define PIR_PIN 3
 
 /*
  * @brief Defines the row on the LCD to display temperature.  Requires DISPLAY_RELATIVE_HUMIDITY.
@@ -53,3 +63,8 @@
  * @brief Defines the row on the LCD to display temperature.  Requires DISPLAY_TEMPERATURE.
  */
 #define TEMPERATURE_LCD_ROW 0
+
+/*
+ * @brief Defines whether a PIR sensor is in use to control the LCD's backlight.
+ */
+#define USE_PIR

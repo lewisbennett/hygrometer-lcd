@@ -31,7 +31,19 @@ void setup() {
 
 	// Initialize the LCD.
 	lcd.init();
+	
+
+	// Configure PIR input.
+#ifdef USE_PI
+
+	pinMode(PIR_PIN, INPUT);
+
+#else
+
 	lcd.backlight();
+
+#endif
+
 
 	// Set static text on LCD.
 #ifdef DISPLAY_TEMPERATURE
@@ -56,10 +68,27 @@ void setup() {
 #endif
 }
 
+unsigned long nextHygroReading_Millis;
+
 /*
  * @brief Runs continuously.
  */
 void loop() {
+
+#ifdef USE_PIR
+
+	if (digitalRead(PIR_PIN) == HIGH)
+		lcd.backlight();
+
+	else
+		lcd.noBacklight();
+
+#endif
+
+	unsigned long now = millis();
+
+	if (now < nextHygroReading_Millis)
+		return;
 
 #ifdef DISPLAY_TEMPERATURE
 
@@ -79,7 +108,7 @@ void loop() {
 
 #endif
 
-	delay(2000);
+	nextHygroReading_Millis = now + HYGRO_READING_INTERVAL_MILLIS;
 }
 
 #pragma endregion
