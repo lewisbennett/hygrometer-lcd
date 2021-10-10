@@ -9,6 +9,22 @@
 #define DHT_TYPE DHT11
 
 /*
+ * @brief Defines whether to show absolute humidity readings. Comment/uncomment this line to toggle display.
+ * Requires DISPLAY_RELATIVE_HUMIDITY and DISPLAY_TEMPERATURE.
+ */
+#define DISPLAY_ABSOLUTE_HUMIDITY
+
+/*
+ * @brief Defines whether to show relative humidity readings. Comment/uncomment this line to toggle display.
+ */
+#define DISPLAY_RELATIVE_HUMIDITY
+
+/*
+ * @brief Defines whether to display temperature readings. Comment/uncomment this line to toggle display.
+ */
+#define DISPLAY_TEMPERATURE
+
+/*
  * @brief Defines the I2C address for the LCD screen.
  */
 #define LCD_I2C_ADDRESS 0x27
@@ -22,3 +38,18 @@
  * @brief Defines the number of rows on the LCD.
  */
 #define LCD_ROWS 4
+
+/*
+ * @brief Defines the row on the LCD to display temperature. Requires DISPLAY_ABSOLUTE_HUMIDITY.
+ */
+#define ABSOLUTE_HUMIDITY_LCD_ROW 2
+
+/*
+ * @brief Defines the row on the LCD to display temperature.  Requires DISPLAY_RELATIVE_HUMIDITY.
+ */
+#define RELATIVE_HUMIDITY_LCD_ROW 1
+
+/*
+ * @brief Defines the row on the LCD to display temperature.  Requires DISPLAY_TEMPERATURE.
+ */
+#define TEMPERATURE_LCD_ROW 0

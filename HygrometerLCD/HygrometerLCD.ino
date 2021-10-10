@@ -34,14 +34,26 @@ void setup() {
 	lcd.backlight();
 
 	// Set static text on LCD.
-	lcd.setCursor(0, 0);
+#ifdef DISPLAY_TEMPERATURE
+
+	lcd.setCursor(0, TEMPERATURE_LCD_ROW);
 	lcd.print("Temperature:");
 
-	lcd.setCursor(0, 1);
+#endif
+
+#ifdef DISPLAY_RELATIVE_HUMIDITY
+
+	lcd.setCursor(0, RELATIVE_HUMIDITY_LCD_ROW);
 	lcd.print("Rel. humidity:");
 
-	lcd.setCursor(0, 2);
+#endif
+
+#if defined(DISPLAY_ABSOLUTE_HUMIDITY) && defined(DISPLAY_TEMPERATURE) && defined(DISPLAY_RELATIVE_HUMIDITY)
+
+	lcd.setCursor(0, ABSOLUTE_HUMIDITY_LCD_ROW);
 	lcd.print("Abs. humidity:");
+
+#endif
 }
 
 /*
@@ -49,10 +61,23 @@ void setup() {
  */
 void loop() {
 
-	uint8_t relativeHumidity = displayRelativeHumidity(15, 1);
-	float temperature = displayTemperature(13, 0);
-	
-	displayAbsoluteHumidity(15, 2, relativeHumidity, temperature);
+#ifdef DISPLAY_TEMPERATURE
+
+	float temperature = displayTemperature(13, TEMPERATURE_LCD_ROW);
+
+#endif
+
+#ifdef DISPLAY_RELATIVE_HUMIDITY
+
+	uint8_t relativeHumidity = displayRelativeHumidity(15, RELATIVE_HUMIDITY_LCD_ROW);
+
+#endif
+
+#if defined(DISPLAY_ABSOLUTE_HUMIDITY) && defined(DISPLAY_TEMPERATURE) && defined(DISPLAY_RELATIVE_HUMIDITY)
+
+	displayAbsoluteHumidity(15, ABSOLUTE_HUMIDITY_LCD_ROW, relativeHumidity, temperature);
+
+#endif
 
 	delay(2000);
 }
