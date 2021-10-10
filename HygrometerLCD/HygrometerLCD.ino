@@ -50,22 +50,71 @@ void setup() {
 void loop() {
 
 	uint8_t relativeHumidity = displayRelativeHumidity(15, 1);
-	float temperature = displayTemperature(13, 0) / 10.0;
+	float temperature = displayTemperature(13, 0);
 	
-	// Absolute humidity can't be calculated without both values.
-	if (isnan(relativeHumidity) || isnan(temperature))
-		return;
+	displayAbsoluteHumidity(15, 2, relativeHumidity, temperature);
 
-	// Formula from: https://carnotcycle.wordpress.com/2012/08/04/how-to-convert-relative-humidity-to-absolute-humidity/
-	float absoluteHumidity = (6.112 * pow(2.71828, (17.67 * temperature) / (temperature + 243.5)) * (relativeHumidity / 100.0) * 2.1674) / (273.15 + temperature);
-
-	lcd.setCursor(15, 2);
-	lcd.print(absoluteHumidity);
+	delay(2000);
 }
 
 #pragma endregion
 
 #pragma region Value Displaying Functions
+
+/*
+ * @brief Calculates and displays the latest absolute humidity reading on the LCD.
+ * @param column The starting column for printing values.
+ * @param row The row to print values on.
+ * @param relativeHumidity The latest relative humidity reading.
+ * @param temperature_X10 The latest temperature reading.
+ */
+void displayAbsoluteHumidity(uint8_t column, uint8_t row, uint8_t relativeHumidity, float temperature) {
+
+	// Absolute humidity can't be calculated without both values.
+	if (isnan(relativeHumidity) || isnan(temperature))
+		return;
+
+	// Formula for calculating absolute humidity sourced from:
+	// https://carnotcycle.wordpress.com/2012/08/04/how-to-convert-relative-humidity-to-absolute-humidity/
+	
+	// Absolute humidity calculated in grams/m^3.
+	float absoluteHumidity = (6.112 * pow(2.71828, (17.67 * temperature) / (temperature + 243.5)) * (relativeHumidity / 100.0) * 2.1674) / (273.15 + temperature);
+
+	// Separate the whole number from the decimals.
+	uint8_t absoluteHumidity_Int = (uint8_t)absoluteHumidity;
+	uint8_t absoluteHumidity_Decimals = (absoluteHumidity - absoluteHumidity_Int) * 100;
+
+	lcd.setCursor(column, row);
+	lcd.print(absoluteHumidity_Int);
+
+	column += absoluteHumidity_Int >= 10 ? 2 : 1;
+
+	lcd.setCursor(column, row);
+
+	if (absoluteHumidity_Decimals != 0) {
+
+		lcd.print(".");
+
+		column++;
+
+		lcd.setCursor(column, row);
+		lcd.print(absoluteHumidity_Decimals);
+
+		// If the absolute humidity only has one decimal place, it will be a multiple of 10 when multiplied by 100.
+		column += absoluteHumidity_Decimals % 10 == 0 ? 1 : 2;
+
+		lcd.setCursor(column, row);
+	}
+
+	// Clear the remaining columns.
+	while (column < LCD_COLUMNS) {
+
+		lcd.setCursor(column, row);
+		lcd.print(" ");
+
+		column++;
+	}
+}
 
 /*
  * @brief Displays the latest relative humidity reading on the LCD.
@@ -115,18 +164,17 @@ uint8_t displayRelativeHumidity(uint8_t column, uint8_t row) {
  * @brief Displays the latest temperature reading on the LCD.
  * @param column The starting column for printing values.
  * @param row The row to print values on.
- * @returns Returns the temperature reading, multiplied by 10 (to avoid floating point math).
+ * @returns Returns the temperature reading.
  */
-int displayTemperature(uint8_t column, uint8_t row) {
+float displayTemperature(uint8_t column, uint8_t row) {
 
-	// Get the temperature, but multiply by 10 to avoid floating point math.
-	int temperature_X10 = dht.readTemperature() * 10;
+	float temperature = dht.readTemperature();
 
-	if (isnan(temperature_X10))
+	if (isnan(temperature))
 		return NAN;
 
 	// Get the original temperature with no decimals. We'll use this to separate the decimal value from the whole value.
-	int temperature_Int = temperature_X10 / 10;
+	int16_t temperature_Int = (int16_t)temperature;
 
 	lcd.setCursor(column, row);
 	lcd.print(temperature_Int);
@@ -148,7 +196,7 @@ int displayTemperature(uint8_t column, uint8_t row) {
 	lcd.setCursor(column, row);
 
 	// Isolate the decimal value. The value must also be absolute, as we don't care whether it's negative at this point.
-	uint8_t temperature_Decimal = abs(temperature_X10 - (temperature_Int * 10));
+	uint8_t temperature_Decimal = abs(temperature - temperature_Int);
 
 	if (temperature_Decimal != 0) {
 
@@ -182,7 +230,7 @@ int displayTemperature(uint8_t column, uint8_t row) {
 		column++;
 	}
 
-	return temperature_X10;
+	return temperature;
 }
 
 #pragma endregion
