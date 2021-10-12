@@ -250,7 +250,7 @@ float displayTemperature(uint8_t column, uint8_t row) {
 	lcd.setCursor(column, row);
 
 	// Isolate the decimal value. The value must also be absolute, as we don't care whether it's negative at this point.
-	uint8_t temperature_Decimal = abs(temperature - temperature_Int);
+	uint8_t temperature_Decimal = abs(temperature - temperature_Int) * 10;
 
 	if (temperature_Decimal != 0) {
 
