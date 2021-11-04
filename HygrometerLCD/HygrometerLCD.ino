@@ -150,9 +150,24 @@ void displayAbsoluteHumidity(uint8_t column, uint8_t row, uint8_t relativeHumidi
 		lcd.print(".");
 
 		column++;
-
 		lcd.setCursor(column, row);
-		lcd.print(absoluteHumidity_Decimals);
+
+		if (absoluteHumidity_Decimals == 10)
+			lcd.print("1");
+
+		else {
+
+			if (absoluteHumidity_Decimals < 10) {
+
+				lcd.print("0");
+
+				column++;
+
+				lcd.setCursor(column, row);
+			}
+
+			lcd.print(absoluteHumidity_Decimals);
+		}
 
 		// If the absolute humidity only has one decimal place, it will be a multiple of 10 when multiplied by 100.
 		column += absoluteHumidity_Decimals % 10 == 0 ? 1 : 2;

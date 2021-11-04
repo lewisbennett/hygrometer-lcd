@@ -11,7 +11,7 @@
 /*
  * @brief Defines the type of DHT sensor being used.
  */
-#define DHT_TYPE DHT11
+#define DHT_TYPE DHT22
 
 /*
  * @brief Defines whether to show absolute humidity readings. Comment/uncomment this line to toggle display.
